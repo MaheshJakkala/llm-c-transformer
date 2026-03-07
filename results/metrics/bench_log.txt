@@ -1,0 +1,22 @@
+============================================================
+ LLM-C Transformer — Inference Benchmark
+ FP32 vs INT8-AVX2
+============================================================
+
+Weight Memory (FP32): 2.01 MB
+Weight Memory (INT8): 0.50 MB
+Memory Reduction:     4.00x
+
+SeqLen   | FP32 (ms)    | INT8 (ms)    | Speedup    | FP32 tok/s     | INT8 tok/s    
+---------|--------------|--------------|------------|----------------|----------------
+8        | 5.002        | 0.170        | 29.46      | 1599           | 47124         
+16       | 10.847       | 0.275        | 39.41      | 1475           | 58131         
+32       | 20.893       | 0.651        | 32.07      | 1532           | 49123         
+64       | 42.070       | 4.432        | 9.49       | 1521           | 14440         
+
+Results saved to results/metrics/bench_results.csv
+
+--- INT8-AVX2 vs FP32 Matmul Micro-Benchmark (M=N=K=256) ---
+FP32 matmul:      3.0893 ms  (10861.5 MFLOP/s)
+INT8-AVX2 matmul: 0.9879 ms  (33966.2 MOPS/s)
+Matmul speedup:   3.13x

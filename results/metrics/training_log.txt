@@ -1,0 +1,56 @@
+Loaded 200 train, 50 val samples
+Training Transformer NER (hidden=256, ffn=512, vocab=256, epochs=30)
+-------------------------------------------------------------------
+Epoch   1/30 | Loss = 1.0519
+Epoch   2/30 | Loss = 0.7781
+Epoch   3/30 | Loss = 0.7722
+Epoch   4/30 | Loss = 1.3252
+Epoch   5/30 | Loss = 0.7772
+Epoch   6/30 | Loss = 0.6874
+Epoch   7/30 | Loss = 0.6512
+Epoch   8/30 | Loss = 0.7229
+Epoch   9/30 | Loss = 0.8420
+Epoch  10/30 | Loss = 0.8706
+Epoch  11/30 | Loss = 0.9498
+Epoch  12/30 | Loss = 0.9746
+Epoch  13/30 | Loss = 1.0073
+Epoch  14/30 | Loss = 1.0203
+Epoch  15/30 | Loss = 0.9504
+Epoch  16/30 | Loss = 0.9062
+Epoch  17/30 | Loss = 0.8531
+Epoch  18/30 | Loss = 0.7603
+Epoch  19/30 | Loss = 0.7617
+Epoch  20/30 | Loss = 0.7612
+Epoch  21/30 | Loss = 0.7485
+Epoch  22/30 | Loss = 0.7161
+Epoch  23/30 | Loss = 0.7196
+Epoch  24/30 | Loss = 0.7375
+Epoch  25/30 | Loss = 0.7252
+Epoch  26/30 | Loss = 0.7435
+Epoch  27/30 | Loss = 0.7486
+Epoch  28/30 | Loss = 0.7490
+Epoch  29/30 | Loss = 0.7234
+Epoch  30/30 | Loss = 0.7201
+
+Training wall-time: 235.46 s (7848.7 ms/epoch)
+
+============================================================
+ INT8 Quantized Inference (Post-Training)
+============================================================
+
+=== Quantized Inference ===
+Latency: 101.794 ms
+Throughput: 31436.16 tokens/sec
+Precision: 0.0217
+Recall   : 0.0825
+F1-score : 0.0344
+INT8 parameter memory: 0.25 MB
+
+============================================================
+ Memory Footprint
+============================================================
+  Embedding table:       0.25 MB (FP32)
+  Transformer weights:   2.01 MB (FP32)
+  Transformer weights:   0.50 MB (INT8)
+  Weight memory saving:  4.00x  (FP32 -> INT8)
+  Peak activation mem:   0.38 MB

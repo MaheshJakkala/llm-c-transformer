@@ -1,0 +1,2 @@
+numpy_ms=0.3756
+numpy_gflops=89.3252

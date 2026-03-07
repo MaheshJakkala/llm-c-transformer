@@ -1,0 +1,71 @@
+============================================================
+ Causal Character-Level Language Model (LLM in C)
+ Vocabulary: 256  Context: 32  Hidden: 128  FFN: 256
+============================================================
+
+Corpus: 48500 bytes  |  Unique chars: 27
+
+Memory Arena: 0.75 MB pre-allocated for training activations
+  (replaces ~512 malloc/free calls per step)
+
+Epoch   1/25 | Loss = 4.4861 | Perplexity =  88.78 | 795.5 ms
+Epoch   2/25 | Loss = 3.3397 | Perplexity =  28.21 | 804.5 ms
+Epoch   3/25 | Loss = 3.0559 | Perplexity =  21.24 | 797.9 ms
+Epoch   4/25 | Loss = 3.0111 | Perplexity =  20.31 | 804.0 ms
+Epoch   5/25 | Loss = 2.9843 | Perplexity =  19.77 | 801.1 ms
+Epoch   6/25 | Loss = 3.1591 | Perplexity =  23.55 | 798.9 ms
+Epoch   7/25 | Loss = 3.1933 | Perplexity =  24.37 | 789.5 ms
+Epoch   8/25 | Loss = 3.1616 | Perplexity =  23.61 | 810.3 ms
+Epoch   9/25 | Loss = 3.2759 | Perplexity =  26.47 | 816.5 ms
+Epoch  10/25 | Loss = 3.1240 | Perplexity =  22.74 | 804.4 ms
+Epoch  11/25 | Loss = 3.0010 | Perplexity =  20.10 | 798.7 ms
+Epoch  12/25 | Loss = 2.8823 | Perplexity =  17.86 | 814.6 ms
+Epoch  13/25 | Loss = 3.1647 | Perplexity =  23.68 | 800.7 ms
+Epoch  14/25 | Loss = 3.0006 | Perplexity =  20.10 | 798.9 ms
+Epoch  15/25 | Loss = 2.8111 | Perplexity =  16.63 | 798.9 ms
+Epoch  16/25 | Loss = 2.9612 | Perplexity =  19.32 | 802.6 ms
+Epoch  17/25 | Loss = 2.9826 | Perplexity =  19.74 | 796.5 ms
+Epoch  18/25 | Loss = 3.0671 | Perplexity =  21.48 | 804.3 ms
+Epoch  19/25 | Loss = 2.9105 | Perplexity =  18.37 | 798.8 ms
+Epoch  20/25 | Loss = 2.9483 | Perplexity =  19.07 | 793.4 ms
+Epoch  21/25 | Loss = 2.7789 | Perplexity =  16.10 | 804.9 ms
+Epoch  22/25 | Loss = 3.0761 | Perplexity =  21.67 | 792.5 ms
+Epoch  23/25 | Loss = 2.9771 | Perplexity =  19.63 | 804.0 ms
+Epoch  24/25 | Loss = 3.0126 | Perplexity =  20.34 | 813.5 ms
+Epoch  25/25 | Loss = 2.7284 | Perplexity =  15.31 | 795.6 ms
+
+--- Training Complete ---
+Total training time : 20.04 s
+Time per epoch      : 801.6 ms
+
+Memory Arena Stats:
+  Arena peak usage : 0.14 MB / 0.75 MB (19%)
+  Malloc calls saved (per epoch): 11200
+
+============================================================
+ Text Generation (Temperature = 0.8)
+============================================================
+
+--- Generated text (seed: "the cat") ---
+the cate                  l     e tu de           
+ku     r         e             r   k  er   h   ro            k      e   
+        r      en  coot     eo     o        o  e         
+ pp    
+   e h
+  pe au   
+--- End of generation ---
+
+
+--- Generated text (seed: "a bright") ---
+a bright           n         o r      b            e e rea h  e o   a                     ls      e     rr    l p    a re o      i e       es  n  
+        n   e   k o         r   u h   w    e e  s      s     
+--- End of generation ---
+
+
+============================================================
+ Model Memory Footprint
+============================================================
+  Embedding table:     0.12 MB (FP32)
+  Transformer weights: 0.62 MB (FP32)  ->  0.16 MB (INT8)  [4.0x]
+
+Loss curve saved to: results/metrics/lm_training_loss.csv
