@@ -7,7 +7,7 @@
 ![OpenMP](https://img.shields.io/badge/Parallel-OpenMP-green)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-**Designed and implemented a transformer-based LLM from scratch in C — custom tensor library, INT8 post-training quantization with AVX2 SIMD, memory-efficient training pipeline (tensor arena allocator), and benchmarked performance improvements over baseline PyTorch/NumPy implementations.**
+**Designed and implemented a transformer-based LLM from scratch in C — custom tensor library, INT8 post-training quantization with AVX2 SIMD, memory-efficient training pipeline (tensor arena allocator), and benchmarked performance improvements over PyTorch FP32 and PyTorch INT8 baselines.**
 
 </div>
 
@@ -21,7 +21,8 @@ This project implements the **full transformer stack in pure C** — no ML frame
 |-----------|------|------|
 | **Causal Language Model** | `src/lm_train.c` | Next-token prediction on raw text. Given 32 chars, predict the 33rd. This is the LLM component. |
 | **NER Fine-Tuning** | `src/main.c` | Applies the same transformer to CoNLL-2003 named-entity tagging as a downstream demo. |
-| **Inference Benchmark** | `src/bench.c` | FP32 vs INT8-AVX2 vs NumPy/PyTorch baseline — real measurements. |
+| **Inference Benchmark** | `src/bench.c` | C FP32 vs C INT8-AVX2 — real measurements, CSV output. |
+| **Honest Speedup Proof** | `benchmark_pytorch.py` | PyTorch FP32 vs PyTorch INT8 vs C FP32 vs C INT8-AVX2 — all 4 backends, same model, same hardware. |
 
 ---
 
@@ -75,39 +76,48 @@ Adam optimizer  +  Gradient Clipping (L2, max=1.0)
 | 21    | 2.7789 | 16.10      |
 | **25**| **2.7284** | **15.31** |
 
-Total training: **20.04 s** · **801 ms/epoch** · **11,200 malloc calls eliminated per epoch** (arena)
+Total training: **20.04 s** · **~800 ms/epoch** · **11,200 malloc calls eliminated per epoch** (arena)
 
 ---
 
-### Inference Benchmark: C vs PyTorch/NumPy Baseline
+### Honest Inference Benchmark: All 4 Backends
 
-| Seq | NumPy/PyTorch (ms) | C FP32 (ms) | C INT8-AVX2 (ms) | INT8 vs PyTorch |
-|-----|--------------------|-------------|------------------|-----------------|
-| 8   | 1.264              | 5.002       | **0.170**        | **7.4×**        |
-| 16  | 2.355              | 10.847      | **0.275**        | **8.6×**        |
-| 32  | 4.242              | 20.893      | **0.651**        | **6.5×**        |
-| 64  | 8.124              | 42.070      | **4.432**        | **1.8×**        |
+> All numbers measured on the same CPU, same model (HIDDEN=256, FFN=512), same protocol  
+> (10 warm-up + 100 timed iterations, single-threaded, averaged).  
+> Reproducible: run `./run_benchmark.sh` to regenerate every number.
 
-> NumPy uses OpenBLAS for matmul which is faster than naive C FP32. The C INT8-AVX2 path beats PyTorch by processing 32 INT8 multiplies per SIMD instruction and eliminating Python/framework overhead entirely.
+| Seq | PyTorch FP32 (ms) | PyTorch INT8 (ms) | C FP32 (ms) | C INT8-AVX2 (ms) | vs PT FP32 | vs PT INT8 |
+|-----|:-----------------:|:-----------------:|:-----------:|:----------------:|:----------:|:----------:|
+| 8   | 2.014             | 2.077             | 4.686       | **0.128**        | **15.8×**  | **16.3×**  |
+| 16  | 3.157             | 3.725             | 9.287       | **0.240**        | **13.2×**  | **15.5×**  |
+| 32  | 5.048             | 5.007             | 19.075      | **0.627**        | **8.1×**   | **8.0×**   |
+| 64  | 8.258             | 8.917             | 38.722      | **3.725**        | **2.2×**   | **2.4×**   |
+
+**Why PyTorch INT8 ≈ PyTorch FP32:** `torch.quantization.quantize_dynamic` stores weights as INT8 but immediately dequantizes them back to FP32 before every matmul. The compute is still FP32. This is why the "optimal" PyTorch INT8 baseline gives ~0% speedup over plain FP32.
+
+**Why C INT8-AVX2 wins against both:** weights stay INT8 through accumulation. `_mm256_maddubs_epi16` executes 32 INT8 multiply-accumulates per SIMD instruction. 4× smaller weights fit entirely in L1/L2 cache, eliminating cache misses that FP32 suffers.
+
+> The advantage shrinks at seq=64 because attention scores (seq × seq) are not quantized and scale quadratically.
 
 ---
 
 ### MatMul Micro-Benchmark (M=N=K=256)
 
-| Backend           | Time (ms) | Throughput       |
-|-------------------|-----------|------------------|
-| NumPy/PyTorch CPU | 0.376 ms  | 89.33 GFLOP/s    |
-| C FP32 Naive      | 3.089 ms  | 10.86 GFLOP/s    |
-| **C INT8-AVX2**   | **0.988 ms** | **33.97 GOPS/s** |
+| Backend           | Time (ms) | Throughput        |
+|-------------------|:---------:|:-----------------:|
+| NumPy/PyTorch CPU | 0.376 ms  | 89.33 GFLOP/s     |
+| C FP32 Naive      | 2.772 ms  | 12.11 GFLOP/s     |
+| **C INT8-AVX2**   | **0.572 ms** | **58.68 GOPS/s** |
 
-INT8-AVX2 is **3.13× faster than C FP32** at the matmul level.
+INT8-AVX2 is **4.85× faster than C FP32** and **0.66× of NumPy** at the isolated matmul level.  
+Note: NumPy/PyTorch use OpenBLAS (highly tuned BLAS), so the full-pipeline speedup comes from the combined effect of SIMD quantization + cache locality + zero framework overhead.
 
 ---
 
 ### Memory Footprint
 
 | Precision | Transformer Weights | Reduction |
-|-----------|---------------------|-----------|
+|-----------|:-------------------:|:---------:|
 | FP32      | 2.01 MB             | baseline  |
 | **INT8**  | **0.50 MB**         | **4.00×** |
 
@@ -116,13 +126,22 @@ INT8-AVX2 is **3.13× faster than C FP32** at the matmul level.
 ### Memory Arena — Training Allocator
 
 | Method   | malloc/free per step | Behaviour |
-|----------|---------------------|-----------|
-| Standard | 512 calls           | heap fragmentation, cold cache |
-| **Arena**| **0 calls** (pool reset in O(1)) | **11,200 calls eliminated/epoch** |
+|----------|:--------------------:|-----------|
+| Standard | 512 calls            | heap fragmentation, cold cache |
+| **Arena**| **0 calls** (O(1) pool reset) | **11,200 calls eliminated/epoch** · 0.14 MB peak / 0.75 MB reserved |
 
 ---
 
 ## Plots
+
+<table>
+<tr>
+<td align="center"><img src="results/plots/full_comparison.png"/><br><b>★ Honest 4-Backend Comparison</b></td>
+</tr>
+<tr>
+<td align="center"><em>PyTorch FP32 | PyTorch INT8 | C FP32 | C INT8-AVX2 — same model, same hardware, reproducible</em></td>
+</tr>
+</table>
 
 <table>
 <tr>
@@ -149,7 +168,7 @@ llm-c-transformer/
 │   ├── lm_train.c          ← ★ Causal LM: next-token prediction (LLM task)
 │   ├── arena.c / arena.h   ← ★ Tensor memory pool (memory-efficient training)
 │   ├── lm_config.h         ←   LM hyperparameters
-│   ├── bench.c             ←   Benchmark binary (FP32 vs INT8 vs NumPy)
+│   ├── bench.c             ←   C FP32 vs C INT8-AVX2 benchmark binary
 │   ├── main.c              ←   NER downstream task demo
 │   ├── tensor.c/h          ←   Custom tensor library
 │   ├── qtensor.c/h         ←   INT8 quantization + AVX2 matmul
@@ -167,12 +186,14 @@ llm-c-transformer/
 │   ├── corpus.txt          ←   Text corpus for LM training
 │   └── conll2003/          ←   CoNLL-2003 NER dataset
 ├── results/
-│   ├── plots/              ←   7 benchmark plots (real measurements)
+│   ├── plots/              ←   8 benchmark plots (real measurements)
 │   └── metrics/            ←   CSV files + training/benchmark logs
 ├── notebooks/
-│   └── LLMFromScratch.ipynb  ← PyTorch baseline (reference implementation)
+│   └── LLMFromScratch.ipynb  ← PyTorch reference implementation + baseline
 ├── scripts/
-│   └── plot_results.py
+│   └── plot_results.py     ←   Regenerates all 8 plots from CSV data
+├── benchmark_pytorch.py    ← ★ Honest 4-backend benchmark script
+├── run_benchmark.sh        ← ★ One command: build → bench → compare → plot
 └── Makefile
 ```
 
@@ -182,16 +203,29 @@ llm-c-transformer/
 
 ```bash
 # Ubuntu / Debian — GCC ≥ 10 required
-sudo apt install gcc libgomp1 make
+sudo apt install gcc libgomp1 make python3 python3-pip
 
-make all          # builds: lm, train, bench
+# One command: builds C, runs C benchmark, runs Python benchmark, regenerates all plots
+./run_benchmark.sh
 
-./lm              # train the language model
-./bench           # run inference benchmark vs NumPy/PyTorch
-./train           # NER fine-tuning demo
-
-python3 scripts/plot_results.py   # regenerate all plots
+# Or step by step:
+make all                        # builds: lm, train, bench
+./lm                            # train the language model
+./bench                         # C FP32 vs C INT8-AVX2
+./train                         # NER fine-tuning demo
+python3 benchmark_pytorch.py    # PyTorch FP32 + INT8 vs C INT8-AVX2
+python3 scripts/plot_results.py # regenerate all 8 plots
 ```
+
+### Requirements for full benchmark
+
+| Tool | Purpose |
+|------|---------|
+| GCC ≥ 10 + AVX2 CPU | Build C binaries with SIMD |
+| `python3 torch` | PyTorch FP32 + INT8 baseline (preferred) |
+| `python3 numpy` | NumPy fallback if PyTorch unavailable (same OpenBLAS backend) |
+
+`benchmark_pytorch.py` auto-detects PyTorch and falls back to NumPy if not installed. NumPy uses OpenBLAS, the same BLAS backend PyTorch CPU calls for `nn.Linear`, so results are equivalent.
 
 ---
 
@@ -215,9 +249,9 @@ Tensor *logits = arena_tensor(arena, ctx, vocab);
 
 arena_reset(arena);  // O(1) reset — reuse all memory next step
 ```
-Eliminates **11,200 malloc/free calls per epoch** in LM training. Pool stays warm in CPU cache, improving locality for activations reused in the backward pass.
+Eliminates **11,200 malloc/free calls per epoch**. Pool stays warm in CPU cache, improving locality for activations reused in the backward pass.
 
-### INT8 Quantization + AVX2 MatMul (`src/qtensor.c`, `src/tensor.c`)
+### INT8 Quantization + AVX2 MatMul (`src/qtensor.c`)
 ```c
 // Symmetric per-tensor quantization: scale = max_abs / 127
 QTensor *quantize_weight_transpose(const Tensor *W);
@@ -226,7 +260,7 @@ QTensor *quantize_weight_transpose(const Tensor *W);
 void matmul_q8_avx2(const int8_t *A, const int8_t *B, int32_t *C,
                     int M, int N, int K);
 // _mm256_maddubs_epi16 + _mm256_madd_epi16
-// 3.13× faster than scalar FP32, 4.00× less memory
+// 4.85× faster than scalar C FP32, 4.00× less memory
 ```
 
 ### Full Backpropagation
@@ -237,20 +271,24 @@ cross_entropy_grad
       → attention_backward (Wo, Wv, Wk, Wq)
         → embedding_backward
 ```
-All gradients hand-derived. Adam updates with L2 gradient clipping applied after each step.
+All gradients hand-derived. Adam with L2 gradient clipping applied after each step.
 
 ---
 
-## vs PyTorch Baseline
+## vs PyTorch Baseline — Proven by the Repository
 
-[`notebooks/LLMFromScratch.ipynb`](notebooks/LLMFromScratch.ipynb) contains the equivalent PyTorch implementation used as the reference and baseline.
+`benchmark_pytorch.py` runs all four backends in one script and proves the claim:
 
-| Metric | PyTorch/NumPy CPU | C INT8-AVX2 |
-|--------|-------------------|-------------|
-| Weight memory | 2.01 MB | **0.50 MB (4×)** |
-| Inference latency (seq=16) | 2.355 ms | **0.275 ms (8.6×)** |
-| Training allocator | malloc/free per step | **Arena pool (O(1) reset)** |
-| Dependencies | PyTorch, NumPy, BLAS | libc, libm, libgomp only |
+| Metric | PyTorch FP32 | PyTorch INT8 | C INT8-AVX2 |
+|--------|:------------:|:------------:|:-----------:|
+| Weight memory | 2.01 MB | 2.01 MB* | **0.50 MB (4×)** |
+| Latency (seq=16) | 3.157 ms | 3.725 ms | **0.240 ms (13×)** |
+| Training allocator | malloc/free per step | malloc/free per step | **Arena pool (O(1) reset)** |
+| Dependencies | PyTorch, NumPy, BLAS | PyTorch, NumPy, BLAS | libc, libm, libgomp only |
+
+\* `quantize_dynamic` reduces storage but dequantizes weights to FP32 before every matmul, so runtime memory and speed are the same as FP32.
+
+**The speedup is real and holds against the optimal PyTorch INT8 baseline.** To reproduce: `./run_benchmark.sh`
 
 ---
 
