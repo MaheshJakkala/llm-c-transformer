@@ -1,0 +1,4 @@
+n,matrix_kb,naive_ms,transposed_ms,tiled_ms,tiled_avx2_ms,transposed_speedup,tiled_speedup,avx2_speedup
+64,16,0.1522,0.1567,0.1370,0.0607,0.97,1.11,2.51
+128,64,2.0413,1.4101,1.2355,0.3425,1.45,1.65,5.96
+256,256,22.7922,11.7726,9.7708,2.9796,1.94,2.33,7.65

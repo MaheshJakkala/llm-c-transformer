@@ -1,0 +1,8 @@
+metric,value
+seq_len,16
+node0_compute_ms,0.6267
+comm_roundtrip_ms,0.9714
+total_ms,1.5981
+comm_overhead_pct,60.79
+tensor_bytes,16384
+socket_bw_gbps,0.2699

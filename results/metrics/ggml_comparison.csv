@@ -1,0 +1,4 @@
+backend,time_ms,speedup_vs_fp32,weight_kb,bits_per_weight
+FP32,0.6274,1.00,256.00,32
+INT8-AVX2,0.0233,26.87,64.00,8
+Q4_0-GGML,1.7370,0.36,40.00,4.5
