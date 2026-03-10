@@ -193,6 +193,7 @@ llm-c-transformer/
 ├── scripts/
 │   └── plot_results.py     ←   Regenerates all 8 plots from CSV data
 ├── benchmark_pytorch.py    ← ★ Honest 4-backend benchmark script
+|__ BENCHMARK.md            <-- clear details regarding benchmarking against PyTorch
 ├── run_benchmark.sh        ← ★ One command: build → bench → compare → plot
 └── Makefile
 ```
