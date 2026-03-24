@@ -23,10 +23,12 @@ SRC_COMMON = \
 SRC_LM    = $(SRC_COMMON) src/lm_train.c
 SRC_TRAIN = $(SRC_COMMON) src/main.c
 SRC_BENCH = $(SRC_COMMON) src/bench.c
-
 .PHONY: all lm train bench bench_ggml dist_infer prof_cache clean
 
 all: lm train bench bench_ggml dist_infer prof_cache
+.PHONY: all lm train bench clean
+
+all: lm train bench
 
 lm:
 	$(CC) $(CFLAGS) $(IFLAGS) -o lm $(SRC_LM) $(LDFLAGS)
@@ -51,3 +53,5 @@ prof_cache:
 
 clean:
 	rm -f lm train bench bench_ggml dist_infer prof_cache
+clean:
+	rm -f lm train bench
