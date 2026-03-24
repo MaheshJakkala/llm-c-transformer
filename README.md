@@ -884,6 +884,7 @@ All gradients hand-derived. Adam with L2 gradient clipping applied after each st
 **The speedup is real and holds against the optimal PyTorch INT8 baseline.** To reproduce: `./run_benchmark.sh`
 
 # Ubuntu / Debian -- GCC >= 10, AVX2-capable CPU required
+```
 sudo apt install gcc libgomp1 make
 
 make all          # builds: lm, train, bench
