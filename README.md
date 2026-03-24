@@ -6,13 +6,11 @@
 ![SIMD](https://img.shields.io/badge/SIMD-AVX2%2FFMA-orange)
 ![OpenMP](https://img.shields.io/badge/Parallel-OpenMP-green)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
+![Zero Dependencies](https://img.shields.io/badge/Dependencies-libc%20only-success)
 
 **Designed and implemented a transformer-based LLM from scratch in C — custom tensor library, INT8 post-training quantization with AVX2 SIMD, memory-efficient training pipeline (tensor arena allocator), and benchmarked performance improvements over PyTorch FP32 and PyTorch INT8 baselines.**
 
-![Lines of Code](https://img.shields.io/badge/LoC-~3500-informational)
-![Zero Dependencies](https://img.shields.io/badge/Dependencies-libc%20only-success)
 
-**Full transformer stack in pure C — custom tensor library, INT8 post-training quantization with AVX2 SIMD, memory-efficient arena allocator, and real benchmarks against PyTorch/NumPy baselines.**
 
 
 </div>
@@ -112,7 +110,7 @@ Full Backprop (hand-derived gradients through every layer)
      │
      ▼
 Adam optimizer  +  Gradient Clipping (L2, max=1.0)
-
+```
 ### System Overview
 
 ```
@@ -190,7 +188,6 @@ Adam optimizer  +  Gradient Clipping (L2, max=1.0)
 
 ```
 
----
 
 
 ## Results — All Numbers Measured on This Machine
@@ -273,7 +270,6 @@ Note: NumPy/PyTorch use OpenBLAS (highly tuned BLAS), so the full-pipeline speed
 </table>
 
 ### Transformer Block Internals
-
 ```
 Input x  [seq x 128]
     |
@@ -306,9 +302,8 @@ Feed-Forward Network                                                   |
     |
     v
 Output  [seq x 128]
-```
 
----
+```
 
 ### Single-Head vs Multi-Head Attention
 
@@ -432,8 +427,6 @@ Measured result:
   Peak arena usage: 0.14 MB / 0.75 MB allocated (19% utilisation)
   Two pools: float data slab + Tensor header slab (cache-friendly separation)
 ```
-
----
 
 ### Quantization Pipeline
 
