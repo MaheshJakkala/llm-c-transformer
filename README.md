@@ -46,7 +46,7 @@ This project implements the **full transformer stack in pure C** — no ML frame
 7. [Build & Run](#build--run)
 8. [Postmortem Report](#postmortem-report)
 9. [References](#references)
-
+ 
 ---
 
 ## What This Project Is
