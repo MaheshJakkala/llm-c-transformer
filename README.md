@@ -48,7 +48,7 @@ This project implements the **full transformer stack in pure C** — no ML frame
 9. [References](#references)
  
 ---
-
+ 
 ## What This Project Is
 
 Three executables, zero ML frameworks, one machine:
