@@ -60,7 +60,7 @@ Three executables, zero ML frameworks, one machine:
 | `./bench` | `src/bench.c` | Benchmarks FP32 vs INT8-AVX2 inference against NumPy/PyTorch baselines |
 
 Every component — tensor ops, backprop, optimizer, quantization, SIMD kernels, the memory allocator — is hand-written in C. No BLAS. No LAPACK. No ML framework of any kind.
-
+ 
 ---
 
 ## Why This Is Hard
