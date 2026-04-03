@@ -11,7 +11,7 @@
 **Designed and implemented a transformer-based LLM from scratch in C — custom tensor library, INT8 post-training quantization with AVX2 SIMD, memory-efficient training pipeline (tensor arena allocator), and benchmarked performance improvements over PyTorch FP32 and PyTorch INT8 baselines.**
 
   
- 
+  
   
 </div>
  
