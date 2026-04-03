@@ -205,7 +205,7 @@ Adam optimizer  +  Gradient Clipping (L2, max=1.0)
 Total training: **20.04 s** · **~800 ms/epoch** · **11,200 malloc calls eliminated per epoch** (arena)
 
 ---
-
+  
 ### Honest Inference Benchmark: All 4 Backends
 
 > All numbers measured on the same CPU, same model (HIDDEN=256, FFN=512), same protocol  
