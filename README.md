@@ -62,7 +62,7 @@ Three executables, zero ML frameworks, one machine:
 Every component — tensor ops, backprop, optimizer, quantization, SIMD kernels, the memory allocator — is hand-written in C. No BLAS. No LAPACK. No ML framework of any kind.
  
 ---
-
+ 
 ## Why This Is Hard
 
 Most "transformers from scratch" projects use PyTorch's autograd. This one does not. The challenges that required explicit engineering:
