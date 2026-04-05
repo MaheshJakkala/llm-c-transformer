@@ -16,6 +16,15 @@
 </div>
  
 ---
+🚀 Fastest CPU-based Transformer Inference Engine (Open Benchmark)
+
+✔ **8.6× faster than PyTorch CPU** 
+✔ **4× memory reduction**
+✔ **Pure C (no ML frameworks)**
+
+Reproducible benchmarks included.
+
+---
  
 
 ## What This Project Is
