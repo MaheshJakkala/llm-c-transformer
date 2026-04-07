@@ -357,15 +357,15 @@ Speedup:          8.6×
 
 | Training Progress | Latency Comparison |
 |-------------------|-------------------|
-| ![Loss & Perplexity](results/plots/training_loss_perplexity.png) | ![Latency](results/plots/latency_comparison.png) |
+| ![Loss & Perplexity](results/plots/lm_training_loss.png) | ![Latency](results/plots/latency_comparison.png) |
 
 | Memory Footprint | Throughput |
 |------------------|------------|
-| ![Memory](results/plots/memory_footprint.png) | ![Throughput](results/plots/throughput_comparison.png) |
+| ![Memory](results/plots/memory_footprint.png) | ![Throughput](results/plots/throughput.png) |
 
 | TCO Comparison | Performance per Dollar |
 |----------------|----------------------|
-| ![TCO](results/plots/tco_annual_comparison.png) | ![Perf/$](results/plots/performance_per_dollar.png) |
+| ![TCO](results/plots/tco_annual_comparison.png) | ![Perf/$](results/plots/performance_per_dollar.html) |
 
 ---
 
