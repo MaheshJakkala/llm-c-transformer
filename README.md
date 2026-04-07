@@ -1,11 +1,15 @@
 # Transformer-Based LLM from Scratch in C
 
+<div align="center">
+
 [![Language](https://img.shields.io/badge/Language-C11-blue?logo=c)](https://img.shields.io/badge/Language-C11-blue?logo=c)
 [![SIMD](https://img.shields.io/badge/SIMD-AVX2%2FFMA-orange)](https://img.shields.io/badge/SIMD-AVX2%2FFMA-orange)
 [![OpenMP](https://img.shields.io/badge/Parallel-OpenMP-green)](https://img.shields.io/badge/Parallel-OpenMP-green)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey)](https://img.shields.io/badge/License-MIT-lightgrey)
 
 **Designed and implemented a transformer-based LLM from scratch in C - custom tensor library, INT8 post-training quantization with AVX2 SIMD, memory-efficient training pipeline (tensor arena allocator), and benchmarked performance improvements over baseline PyTorch/NumPy implementations.**
+
+</div>
 ---
 🚀 Fastest CPU-based Transformer Inference Engine (Open Benchmark)
 
@@ -150,6 +154,83 @@ Full Backprop (hand-derived gradients through every layer)
 Adam optimizer  +  Gradient Clipping (L2, max=1.0)
 ```
 
+### System Overview
+
+```
++-------------------------------------------------------------------------+
+|                         Causal LM Pipeline                              |
+|                                                                         |
+|  corpus.txt  -->  Tokenizer (byte-level)  -->  Sliding windows (ctx=32) |
+|  (48,500 bytes)   vocab = 256                  one window per step      |
+|                                                                         |
+|  +----------------------------------------------------------------------+|
+|  |                       Forward Pass                                   ||
+|  |                                                                      ||
+|  |   input tokens [seq=32]                                              ||
+|  |         |                                                            ||
+|  |         v                                                            ||
+|  |   Embedding Table  (vocab=256 x hidden=128)                          ||
+|  |         |   lookup row for each token id                             ||
+|  |         v                                                            ||
+|  |   +---------------------------------------------+                  ||
+|  |   |         Transformer Block                   |                  ||
+|  |   |                                             |                  ||
+|  |   |  +---------------------------------------+  |                  ||
+|  |   |  |   Single-Head Self-Attention          |  |                  ||
+|  |   |  |                                       |  |                  ||
+|  |   |  |  Q = x . Wq   [seq x 128]             |  |                  ||
+|  |   |  |  K = x . Wk   [seq x 128]             |  |                  ||
+|  |   |  |  V = x . Wv   [seq x 128]             |  |                  ||
+|  |   |  |                                       |  |                  ||
+|  |   |  |  scores = Q.K^T / sqrt(128)           |  |                  ||
+|  |   |  |  causal mask: scores[i,j] = -1e9      |  |                  ||
+|  |   |  |               when j > i              |  |                  ||
+|  |   |  |  attn = row_softmax(scores)           |  |                  ||
+|  |   |  |  ctx  = attn . V                      |  |                  ||
+|  |   |  |  out  = ctx  . Wo                     |  |                  ||
+|  |   |  +-------------------+-------------------+  |                  ||
+|  |   |                      |  + residual(x)        |                  ||
+|  |   |                   LayerNorm                  |                  ||
+|  |   |                      |                       |                  ||
+|  |   |  +-------------------v-------------------+  |                  ||
+|  |   |  |      Feed-Forward Network             |  |                  ||
+|  |   |  |                                       |  |                  ||
+|  |   |  |  h = GELU(x . W1 + b1)  [x256]       |  |                  ||
+|  |   |  |  y = h . W2 + b2        [x128]       |  |                  ||
+|  |   |  +-------------------+-------------------+  |                  ||
+|  |   |                      |  + residual            |                  ||
+|  |   |                   LayerNorm                   |                  ||
+|  |   +---------------------------------------------+                  ||
+|  |         |                                                            ||
+|  |         v                                                            ||
+|  |   LM Head: Linear(128 -> 256) + log-sum-exp cross-entropy           ||
+|  +----------------------------------------------------------------------+|
+|                                                                         |
+|  +----------------------------------------------------------------------+|
+|  |                       Backward Pass                                  ||
+|  |                                                                      ||
+|  |  dL/dlogits --> linear_backward(W_lm)                               ||
+|  |                     |                                                ||
+|  |            --> ffn_backward(W2, W1, GELU')                          ||
+|  |                     |                                                ||
+|  |            --> attention_backward(Wo, Wv, Wk, Wq)                  ||
+|  |                     |  softmax Jacobian: diag(a) - a.a^T            ||
+|  |                     |  causal mask zeros masked gradients            ||
+|  |                     |                                                ||
+|  |            --> embedding_backward                                    ||
+|  +----------------------------------------------------------------------+|
+|                                                                         |
+|  +----------------------------------------------------------------------+|
+|  |                     Optimizer Step                                   ||
+|  |                                                                      ||
+|  |  L2 gradient clipping  (max_norm = 1.0)                             ||
+|  |  Adam  (b1=0.9, b2=0.999, eps=1e-8, lr=1e-3)                        ||
+|  |  arena_reset()  -- O(1) activation memory reclaim                   ||
+|  +----------------------------------------------------------------------+|
++-------------------------------------------------------------------------+
+
+```
+
 ---
 
 ## Results — All Numbers Measured on This Machine
@@ -268,12 +349,19 @@ Speedup:          8.6×
 
 ## Plots
 
-|  |  |
-| --- | --- |
-| **LM Loss & Perplexity** | **C vs PyTorch Latency** |
-| **MatMul Micro-Benchmark** | **Weight Memory (4× saving)** |
-| **Throughput vs PyTorch** | **Arena vs Standard Allocator** |
-| **🆕 TCO Comparison** | **🆕 Performance per Dollar** |
+## Plots
+
+| Training Progress | Latency Comparison |
+|-------------------|-------------------|
+| ![Loss & Perplexity](results/plots/training_loss_perplexity.png) | ![Latency](results/plots/latency_comparison.png) |
+
+| Memory Footprint | Throughput |
+|------------------|------------|
+| ![Memory](results/plots/memory_footprint.png) | ![Throughput](results/plots/throughput_comparison.png) |
+
+| TCO Comparison | Performance per Dollar |
+|----------------|----------------------|
+| ![TCO](results/plots/tco_annual_comparison.png) | ![Perf/$](results/plots/performance_per_dollar.png) |
 
 ---
 
