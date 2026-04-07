@@ -2,10 +2,11 @@
 
 <div align="center">
 
-[![Language](https://img.shields.io/badge/Language-C11-blue?logo=c)](https://img.shields.io/badge/Language-C11-blue?logo=c)
-[![SIMD](https://img.shields.io/badge/SIMD-AVX2%2FFMA-orange)](https://img.shields.io/badge/SIMD-AVX2%2FFMA-orange)
-[![OpenMP](https://img.shields.io/badge/Parallel-OpenMP-green)](https://img.shields.io/badge/Parallel-OpenMP-green)
-[![License](https://img.shields.io/badge/License-MIT-lightgrey)](https://img.shields.io/badge/License-MIT-lightgrey)
+![Language](https://img.shields.io/badge/Language-C11-blue?logo=c)
+![SIMD](https://img.shields.io/badge/SIMD-AVX2%2FFMA-orange)
+![OpenMP](https://img.shields.io/badge/Parallel-OpenMP-green)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
+![Zero Dependencies](https://img.shields.io/badge/Dependencies-libc%20only-success)
 
 **Designed and implemented a transformer-based LLM from scratch in C - custom tensor library, INT8 post-training quantization with AVX2 SIMD, memory-efficient training pipeline (tensor arena allocator), and benchmarked performance improvements over baseline PyTorch/NumPy implementations.**
 
