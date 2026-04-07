@@ -365,7 +365,7 @@ Speedup:          8.6×
 
 | TCO Comparison | Performance per Dollar |
 |----------------|----------------------|
-| ![TCO](results/plots/tco_annual_comparison.png) | ![Perf/$](results/plots/performance_per_dollar.html) |
+| ![TCO](results/plots/tco_annual_comparison.png) | ![Perf/$](results/plots/performance_per_dollar.png) |
 
 ---
 
