@@ -19,6 +19,7 @@
 * ✔ **Pure C (no ML frameworks)**
 
 Reproducible benchmarks included.
+
 ---
 **🔥 NEW: Comprehensive TCO (Total Cost of Ownership) Analysis — proves not just speed, but cost-efficiency and production viability.**
 
