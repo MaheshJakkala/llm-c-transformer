@@ -12,7 +12,7 @@
 
 </div>
  
----
+--- 
 
 🚀 Fastest CPU-based Transformer Inference Engine (Open Benchmark)
 
